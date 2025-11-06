@@ -1,44 +1,68 @@
-export async function get() {
-  const siteUrl = 'https://abdoutalby.github.io/thexbyte_landing_page';
+export async function GET() {
+  const siteUrl = 'https://thexbyte.com.tn';
+  const currentDate = new Date().toISOString();
   
+  const pages = [
+    {
+      url: `${siteUrl}/`,
+      lastmod: currentDate,
+      changefreq: 'weekly',
+      priority: '1.0'
+    },
+    {
+      url: `${siteUrl}/#services`,
+      lastmod: currentDate,
+      changefreq: 'monthly',
+      priority: '0.9'
+    },
+    {
+      url: `${siteUrl}/#portfolio`,
+      lastmod: currentDate,
+      changefreq: 'monthly',
+      priority: '0.8'
+    },
+    {
+      url: `${siteUrl}/#testimonials`,
+      lastmod: currentDate,
+      changefreq: 'monthly',
+      priority: '0.7'
+    },
+    {
+      url: `${siteUrl}/#mission`,
+      lastmod: currentDate,
+      changefreq: 'monthly',
+      priority: '0.7'
+    },
+    {
+      url: `${siteUrl}/#contact`,
+      lastmod: currentDate,
+      changefreq: 'monthly',
+      priority: '0.8'
+    }
+  ];
+
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:news="http://www.google.com/schemas/sitemap-news/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml"
+        xmlns:mobile="http://www.google.com/schemas/sitemap-mobile/1.0"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
+        xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">
+  ${pages.map(page => `
   <url>
-    <loc>${siteUrl}</loc>
-    <lastmod>${new Date().toISOString()}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>1.0</priority>
+    <loc>${page.url}</loc>
+    <lastmod>${page.lastmod}</lastmod>
+    <changefreq>${page.changefreq}</changefreq>
+    <priority>${page.priority}</priority>
   </url>
-  <url>
-    <loc>${siteUrl}/#services</loc>
-    <lastmod>${new Date().toISOString()}</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>${siteUrl}/#portfolio</loc>
-    <lastmod>${new Date().toISOString()}</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>${siteUrl}/#mission</loc>
-    <lastmod>${new Date().toISOString()}</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>${siteUrl}/#contact</loc>
-    <lastmod>${new Date().toISOString()}</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
-  </url>
+  `).join('')}
 </urlset>`;
 
-  return {
-    body: sitemap,
+  return new Response(sitemap, {
+    status: 200,
     headers: {
-      'Content-Type': 'application/xml'
+      'Content-Type': 'application/xml',
+      'Cache-Control': 'public, max-age=86400', // Cache for 24 hours
     }
-  };
+  });
 }
