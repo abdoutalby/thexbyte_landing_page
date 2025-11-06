@@ -6,5 +6,3 @@ export default defineConfig({
   base: '/thexbyte_landing_page', // Replace with your repo name
   integrations: []
 });
-
-//https://github.com/abdoutalby/thexbyte_landing_page
