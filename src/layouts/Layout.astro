@@ -1,15 +1,116 @@
 ---
- export interface Props {
+export interface Props {
   title?: string;
   description?: string;
+  canonicalUrl?: string;
+  noindex?: boolean;
+  structuredData?: object;
 }
 
-const { title = "TheXbyte - Digital Solutions & Innovation", description = "Transform your business with cutting-edge digital solutions, mobile applications, and automation systems." } = Astro.props;
+const {
+  title = "TheXbyte - Digital Solutions & Innovation",
+  description = "Transform your business with cutting-edge digital solutions, mobile applications, and automation systems. Custom software development, mobile apps, and automation solutions.",
+  canonicalUrl,
+  noindex = false,
+  structuredData
+} = Astro.props;
+
+// Default structured data
+const defaultStructuredData = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "TheXbyte",
+  "url": "https://abdoutalby.github.io/thexbyte_landing_page",
+  "logo": "https://abdoutalby.github.io/thexbyte_landing_page/logo.png",
+  "description": "Digital solutions and innovation company providing custom software development, mobile applications, and automation systems.",
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "avenue 18 janvier ariana centre escalier c bureau c 408",
+    "addressLocality": "Ariana",
+    "addressCountry": "Tunisia"
+  },
+  "contactPoint": {
+    "@type": "ContactPoint",
+    "telephone": "+216-21-238-537",
+    "contactType": "customer service",
+    "email": "hello@thexbyte.com"
+  },
+  "sameAs": [
+    "https://www.linkedin.com/company/thexbyte",
+    "https://twitter.com/thexbyte",
+    "https://github.com/thexbyte"
+  ]
+};
+
+const pageStructuredData = structuredData || defaultStructuredData;
+const pageUrl = canonicalUrl || "https://abdoutalby.github.io/thexbyte_landing_page";
 ---
 
 <!DOCTYPE html>
 <html lang="en">
   <head>
+    <!-- Basic Meta Tags -->
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description} />
+    
+    <!-- SEO Meta Tags -->
+    <title>{title}</title>
+    <meta name="keywords" content="digital solutions, custom software development, mobile applications, automation systems, web development, Tunisia, TheXbyte" />
+    <meta name="author" content="TheXbyte" />
+    <meta name="robots" content={noindex ? "noindex, nofollow" : "index, follow"} />
+    
+    <!-- Open Graph Meta Tags (for social media) -->
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={pageUrl} />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="TheXbyte" />
+    <meta property="og:locale" content="en_US" />
+    
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:site" content="@thexbyte" />
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href={pageUrl} />
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+      {JSON.stringify(pageStructuredData)}
+    </script>
+    
+    <!-- Additional Schema Markup for Local Business -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "LocalBusiness",
+        "name": "TheXbyte",
+        "image": "https://abdoutalby.github.io/thexbyte_landing_page/logo.png",
+        "description": "Digital solutions and innovation company in Tunisia",
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": "avenue 18 janvier ariana centre escalier c bureau c 408",
+          "addressLocality": "Ariana",
+          "addressCountry": "Tunisia"
+        },
+        "geo": {
+          "@type": "GeoCoordinates",
+          "latitude": "36.8665",
+          "longitude": "10.1647"
+        },
+        "url": "https://abdoutalby.github.io/thexbyte_landing_page",
+        "telephone": "+216-21-238-537",
+        "openingHours": "Mo-Fr 09:00-18:00, Sa 10:00-16:00",
+        "priceRange": "$$",
+        "areaServed": "Tunisia, Worldwide"
+      }
+    </script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content={description} />
