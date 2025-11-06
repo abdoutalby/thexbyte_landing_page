@@ -1,7 +1,8 @@
 {
-  "name": "thexbyte-astro",
+  "name": "thexbyte",
   "type": "module",
   "version": "1.0.0",
+  "description": "TheXbyte - Digital Solutions & Innovation",
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
@@ -10,6 +11,9 @@
     "astro": "astro"
   },
   "dependencies": {
-    "astro": "^4.0.0"
+    "astro": "^4.5.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }
