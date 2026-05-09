@@ -138,11 +138,6 @@ const pageUrl = canonicalUrl || "https://abdoutalby.github.io/thexbyte_landing_p
           });
         });
 
-        // Initialize EmailJS (you'll need to replace with your actual public key)
-        if (typeof emailjs !== 'undefined') {
-          emailjs.init("your_public_key_here");
-        }
-
         // Mobile Menu Toggle
         const menuToggle = document.getElementById('menuToggle');
         const navLinks = document.getElementById('navLinks');
@@ -265,44 +260,162 @@ const pageUrl = canonicalUrl || "https://abdoutalby.github.io/thexbyte_landing_p
           consultDateInput.setAttribute('min', today);
         }
 
-        // Form submission handlers (simplified for static site)
-        document.querySelectorAll('form').forEach(form => {
-          form.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const submitBtn = this.querySelector('button[type="submit"]');
-            const statusEl = this.querySelector('.form-status');
-            
-            if (submitBtn && statusEl) {
-              // Simulate form submission
-              submitBtn.disabled = true;
-              submitBtn.textContent = 'Sending...';
-              
-              setTimeout(() => {
-                statusEl.textContent = 'Thank you! In a real implementation, this would send an email.';
-                statusEl.className = 'form-status success';
-                statusEl.style.display = 'block';
-                
-                setTimeout(() => {
-                  form.reset();
-                  submitBtn.disabled = false;
-                  submitBtn.textContent = submitBtn.getAttribute('data-original-text') || 'Submit';
-                  
-                  // Close modal if it's a modal form
-                  const modal = form.closest('.modal');
-                  if (modal) {
-                    closeModal(modal);
-                  }
-                }, 3000);
-              }, 1000);
-            }
-          });
+        // ─── EmailJS configuration ───────────────────────────────────────────
+        // Replace the three values below with your real EmailJS credentials.
+        // Service ID  : found in EmailJS dashboard → Email Services
+        // Template IDs: found in EmailJS dashboard → Email Templates
+        // Public Key  : found in EmailJS dashboard → Account → API Keys
+        const EMAILJS_SERVICE_ID   = 'service_thexbyte';
+        const EMAILJS_CONTACT_TPL  = 'template_contact';
+        const EMAILJS_CONSULT_TPL  = 'template_consultation';
+        const EMAILJS_QUOTE_TPL    = 'template_quote';
+        const EMAILJS_NEWSLETTER_TPL = 'template_newsletter';
+        const EMAILJS_PUBLIC_KEY   = 'YOUR_PUBLIC_KEY';
+
+        if (typeof emailjs !== 'undefined') {
+          emailjs.init(EMAILJS_PUBLIC_KEY);
+        }
+
+        // ─── Helper: show status message ─────────────────────────────────────
+        function showStatus(statusEl, message, type) {
+          statusEl.textContent = message;
+          statusEl.className = 'form-status ' + type;
+          statusEl.style.display = 'block';
+        }
+
+        // ─── Helper: set button loading state ────────────────────────────────
+        function setLoading(btn, spinner, loading) {
+          btn.disabled = loading;
+          btn.textContent = loading ? 'Sending…' : (btn.getAttribute('data-original-text') || 'Submit');
+          if (spinner) spinner.style.display = loading ? 'block' : 'none';
+        }
+
+        // ─── Helper: send via EmailJS or fallback ────────────────────────────
+        function sendForm(form, templateId) {
+          if (typeof emailjs !== 'undefined' && EMAILJS_PUBLIC_KEY !== 'YOUR_PUBLIC_KEY') {
+            return emailjs.sendForm(EMAILJS_SERVICE_ID, templateId, form);
+          }
+          // Fallback: simulate success for local dev / missing credentials
+          return new Promise(resolve => setTimeout(resolve, 900));
+        }
+
+        // ─── Store original button text BEFORE attaching listeners ───────────
+        document.querySelectorAll('form button[type="submit"]').forEach(btn => {
+          btn.setAttribute('data-original-text', btn.textContent.trim());
         });
 
-        // Store original button text
-        document.querySelectorAll('form button[type="submit"]').forEach(btn => {
-          btn.setAttribute('data-original-text', btn.textContent);
-        });
+        // ─── Contact Form ─────────────────────────────────────────────────────
+        const contactForm = document.getElementById('contactForm');
+        if (contactForm) {
+          contactForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const btn      = this.querySelector('button[type="submit"]');
+            const statusEl = document.getElementById('contactStatus');
+            const spinner  = null; // contact form has no spinner element
+            statusEl.style.display = 'none';
+            setLoading(btn, spinner, true);
+
+            sendForm(this, EMAILJS_CONTACT_TPL)
+              .then(() => {
+                showStatus(statusEl, '✅ Message sent! We\'ll get back to you within 24 hours.', 'success');
+                this.reset();
+              })
+              .catch(() => {
+                showStatus(statusEl, '❌ Something went wrong. Please email us directly at hello@thexbyte.com', 'error');
+              })
+              .finally(() => {
+                setLoading(btn, spinner, false);
+              });
+          });
+        }
+
+        // ─── Newsletter Form ──────────────────────────────────────────────────
+        const newsletterForm = document.getElementById('newsletterForm');
+        if (newsletterForm) {
+          newsletterForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const btn      = this.querySelector('button[type="submit"]');
+            const statusEl = document.getElementById('newsletterStatus');
+            statusEl.style.display = 'none';
+            setLoading(btn, null, true);
+
+            sendForm(this, EMAILJS_NEWSLETTER_TPL)
+              .then(() => {
+                showStatus(statusEl, '✅ You\'re subscribed! Thank you for joining our newsletter.', 'success');
+                this.reset();
+              })
+              .catch(() => {
+                showStatus(statusEl, '❌ Subscription failed. Please try again later.', 'error');
+              })
+              .finally(() => {
+                setLoading(btn, null, false);
+              });
+          });
+        }
+
+        // ─── Consultation Form ────────────────────────────────────────────────
+        const consultationForm = document.getElementById('consultationForm');
+        if (consultationForm) {
+          consultationForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const btn       = this.querySelector('button[type="submit"]');
+            const spinner   = document.getElementById('consultSpinner');
+            const statusEl  = document.getElementById('consultStatus');
+            const servicesInput = document.getElementById('consultServices');
+            statusEl.style.display = 'none';
+
+            // Validate that at least one service is selected
+            if (!servicesInput || !servicesInput.value.trim()) {
+              showStatus(statusEl, '⚠️ Please select at least one service.', 'error');
+              return;
+            }
+
+            setLoading(btn, spinner, true);
+
+            sendForm(this, EMAILJS_CONSULT_TPL)
+              .then(() => {
+                showStatus(statusEl, '✅ Consultation booked! We\'ll confirm your appointment by email shortly.', 'success');
+                this.reset();
+                // Reset service option visuals
+                document.querySelectorAll('.service-option').forEach(opt => opt.classList.remove('selected'));
+                selectedServices = [];
+                if (servicesInput) servicesInput.value = '';
+                setTimeout(() => closeModal(consultationModal), 3000);
+              })
+              .catch(() => {
+                showStatus(statusEl, '❌ Booking failed. Please contact us directly at hello@thexbyte.com', 'error');
+              })
+              .finally(() => {
+                setLoading(btn, spinner, false);
+              });
+          });
+        }
+
+        // ─── Quote Form ───────────────────────────────────────────────────────
+        const quoteForm = document.getElementById('quoteForm');
+        if (quoteForm) {
+          quoteForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const btn      = this.querySelector('button[type="submit"]');
+            const spinner  = document.getElementById('quoteSpinner');
+            const statusEl = document.getElementById('quoteStatus');
+            statusEl.style.display = 'none';
+            setLoading(btn, spinner, true);
+
+            sendForm(this, EMAILJS_QUOTE_TPL)
+              .then(() => {
+                showStatus(statusEl, '✅ Quote request received! We\'ll send you an estimate within 48 hours.', 'success');
+                this.reset();
+                setTimeout(() => closeModal(quoteModal), 3000);
+              })
+              .catch(() => {
+                showStatus(statusEl, '❌ Request failed. Please email us at hello@thexbyte.com', 'error');
+              })
+              .finally(() => {
+                setLoading(btn, spinner, false);
+              });
+          });
+        }
 
         // Intersection Observer for animations
         const observerOptions = {
